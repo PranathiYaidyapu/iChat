@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Community</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container">
+    <a class="navbar-brand" th:href="@{/home}">
+      <i class="bi bi-heart-pulse me-1"></i>iChat
+    </a>
+  </div>
+</nav>
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>Community</h3>
+    <a class="btn btn-primary" th:href="@{/community/new}">New Thread</a>
+  </div>
+
+  <div th:if="${#lists.isEmpty(threads)}" class="alert alert-info">No threads yet.</div>
+
+  <div th:each="t : ${threads}">
+    <div class="card mb-2">
+      <div class="card-body">
+        <h5 th:text="${t.title}">Thread title</h5>
+        <p class="text-muted small mb-2">
+          Posted by <span th:text="${t.authorDisplayName}">Author</span> •
+          <span th:text="${#temporals.format(t.createdAt, 'yyyy-MM-dd HH:mm')}">timestamp</span>
+        </p>
+        <p hidden th:text="${t.content}">content</p>
+        <a th:href="@{|/community/${t.id}|}" class="btn btn-sm btn-outline-primary">View Discussion</a>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

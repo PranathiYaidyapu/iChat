@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head>
+  <meta charset="UTF-8">
+  <title>iChat Home</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container">
+    <ul class="navbar-nav me-auto">
+      <li class="nav-item">
+        <a class="nav-link" th:href="@{/home}">
+          <i class="bi bi-house-door me-1"></i>Dashboard
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link" th:href="@{/community}">
+          <i class="bi bi-people-fill me-1"></i>Community
+        </a>
+      </li>
+    </ul>
+    <div class="collapse navbar-collapse">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a class="btn btn-danger" href="/logout">Logout</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+  <div class="container">
+
+    <div class="collapse navbar-collapse">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+                    <span class="navbar-text text-light">
+                        Hello, <span th:text="${user.firstname} + ' ' + ${user.lastName}"></span>!
+                    </span>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" th:href="@{/logout}">Logout</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container mt-5">
+  <h2>Welcome, <span th:text="${user.firstname} + ' ' + ${user.lastName}"></span>!</h2>
+  <p class="text-muted">Select an option below to manage your work:</p>
+
+  <div class="row mt-4">
+    <div class="col-md-4">
+      <div class="card shadow-sm">
+        <div class="card-body text-center">
+          <h5 class="card-title">Weekly Schedule</h5>
+          <p class="card-text">Set your working hours, days, and breaks.</p>
+          <a th:href="@{/doctor/schedule}" class="btn btn-primary">Manage Schedule</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card shadow-sm">
+        <div class="card-body text-center">
+          <h5 class="card-title">Appointments</h5>
+          <p class="card-text">View and manage your booked appointments.</p>
+          <a th:href="@{/doctor/appointments}" class="btn btn-success">View Appointments</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card shadow-sm">
+        <div class="card-body text-center">
+          <h5 class="card-title">Profile</h5>
+          <p class="card-text">Update your information or specialization.</p>
+          <a th:href="@{/doctor/profile}" class="btn btn-secondary">Edit Profile</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

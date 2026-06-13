@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            padding-top: 100px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            position: relative;
+        }
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        .close:hover, .close:focus {
+            color: black;
+            text-decoration: none;
+        }
+        #deleteSelectedBtn {
+            margin-left: 1px;
+            font-size: 0.8rem;
+        }
+    </style>
+
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+        <a class="navbar-brand" href="#">Admin Dashboard</a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="btn btn-danger" href="/logout">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="container mt-5">
+    <h2>Admin Dashboard</h2>
+    <p>Welcome, <span th:text="${user.firstname + ' ' + user.lastName}"></span></p>
+
+    <button class="btn btn-primary" id="manageUsersBtn">Manage Users</button>
+    <button class="btn btn-success" id="addUserBtn">Add User</button>
+
+
+
+    <!-- Users List -->
+    <div id="usersModal" class="modal">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h4 style="margin:0;">Users</h4>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <button class="btn btn-danger btn-sm" id="deleteSelectedBtn" disabled>Delete Selected</button>
+                    &nbsp;
+                    <span class="close" id="closeModal">&times;</span>
+                </div>
+            </div>
+
+            <input type="text" id="searchInput" placeholder="Search by email/firstname/lastname" class="form-control mb-2">
+            <table class="table table-bordered" id="usersTable">
+                <thead>
+                <tr>
+                    <th>Select</th>
+                    <th>Email</th>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Roles</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+
+
+    <!--Add USER-->
+    <div id="addUserModal" class="modal">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h4>Add User</h4>
+                <span class="close" id="closeAddUserModal">&times;</span>
+            </div>
+
+            <form id="addUserForm">
+                <div class="mb-2">
+                    <label>Email</label>
+                    <input type="email" class="form-control" name="email" required>
+                </div>
+                <div class="mb-2">
+                    <label>First Name</label>
+                    <input type="text" class="form-control" name="firstName" required>
+                </div>
+                <div class="mb-2">
+                    <label>Last Name</label>
+                    <input type="text" class="form-control" name="lastName" required>
+                </div>
+                <div class="mb-2">
+                    <label>Password</label>
+                    <input type="password" class="form-control" name="password" required>
+                </div>
+                <div class="mb-2">
+                    <label>Role</label>
+                    <select class="form-control" name="role" id="role" required>
+                        <option value="ROLE_ADMIN">Admin</option>
+                        <option value="ROLE_DOCTOR">Doctor</option>
+                    </select>
+                </div>
+                <div id="doctor-fields" style="display:none;">
+                    <div class="mb-2">
+                        <label>Designation</label>
+                        <select class="form-control" name="designation" >
+                            <option value="LCSW">LCSW</option>
+                            <option value="LMFT">LMFT</option>
+                            <option value="PhD">PhD</option>
+                            <option value="MD">MD</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label>Specialization</label>
+                        <select class="form-control" name="specialization" >
+                            <option value="Depression">Depression</option>
+                            <option value="OCD">OCD</option>
+                            <option value="LGBTQ">LGBTQ</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary mt-2">Create User</button>
+            </form>
+        </div>
+    </div>
+
+</div>
+<script>
+    const modal = document.getElementById("usersModal");
+    const btn = document.getElementById("manageUsersBtn");
+    const span = document.getElementById("closeModal");
+    const tableBody = document.querySelector("#usersTable tbody");
+    const searchInput = document.getElementById("searchInput");
+    const deleteBtn = document.getElementById("deleteSelectedBtn");
+
+    let users = [];
+
+    btn.onclick = async function() {
+        modal.style.display = "block";
+        await loadUsers();
+    }
+    span.onclick = function() { modal.style.display = "none"; }
+    window.onclick = function(event) {
+        if (event.target === modal) modal.style.display = "none";
+    }
+
+    async function loadUsers() {
+        const response = await fetch("/admin/users");
+        users = await response.json();
+        renderTable(users);
+    }
+
+    function renderTable(filteredUsers) {
+        tableBody.innerHTML = "";
+        filteredUsers.forEach(user => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td><input type="checkbox" class="user-checkbox" data-id="${user.id}"></td>
+                <td>${user.username}</td>
+                <td>${user.firstname}</td>
+                <td>${user.lastName}</td>
+                <td>${user.roles.join(", ")}</td>
+            `;
+            tableBody.appendChild(tr);
+        });
+        updateDeleteBtnState();
+        document.querySelectorAll(".user-checkbox").forEach(cb => {
+            cb.addEventListener("change", updateDeleteBtnState);
+        });
+    }
+
+    searchInput.addEventListener("input", () => {
+        const query = searchInput.value.toLowerCase();
+        const filtered = users.filter(u =>
+            u.username.toLowerCase().includes(query) ||
+            u.firstname.toLowerCase().includes(query) ||
+            u.lastName.toLowerCase().includes(query)
+        );
+        renderTable(filtered);
+    });
+
+    function updateDeleteBtnState() {
+        const anyChecked = document.querySelectorAll(".user-checkbox:checked").length > 0;
+        deleteBtn.disabled = !anyChecked;
+    }
+
+    deleteBtn.addEventListener("click", async () => {
+        const selectedIds = Array.from(document.querySelectorAll(".user-checkbox:checked"))
+            .map(cb => cb.dataset.id);
+        if (confirm("Are you sure you want to delete selected users?")) {
+            await fetch("/admin/users/delete?ids=" + selectedIds.join(","), { method: "POST" });
+            await loadUsers();
+        }
+    });
+
+
+
+
+    // Open Add User Modal
+    document.getElementById("addUserBtn").addEventListener("click", function() {
+        document.getElementById("addUserModal").style.display = "block";
+    });
+
+    // Close Add User Modal
+    document.getElementById("closeAddUserModal").addEventListener("click", function() {
+        document.getElementById("addUserModal").style.display = "none";
+    });
+
+    // Submit Form (AJAX)
+    document.getElementById("addUserForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+
+        fetch("/admin/add-user", {
+            method: "POST",
+            body: formData
+        })
+            .then(response => {
+                alert("User Created Successfully!");
+                location.reload();
+            })
+            .catch(error => alert("Error creating user!"));
+    });
+
+    let role = document.getElementById('role');
+
+    document.getElementById('role').addEventListener('change', function() {
+        document.getElementById('doctor-fields').style.display = this.value === 'ROLE_DOCTOR' ? 'block' : 'none';
+    });
+
+</script>
+
+</body>
+</html>

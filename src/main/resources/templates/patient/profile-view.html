@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>My Profile</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+        <a class="navbar-brand" th:href="@{/patient/dashboard}">
+            <i class="bi bi-heart-pulse me-1"></i>iChat
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/patient/dashboard}">
+                        <i class="bi bi-house-door me-1"></i>Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/patient/appointment/new}">
+                        <i class="bi bi-calendar-plus me-1"></i>Book Appointment
+                    </a>
+                </li>
+                <!-- Community in Primary Nav -->
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/community}">
+                        <i class="bi bi-people-fill me-1"></i>Community
+                    </a>
+                </li>
+            </ul>
+            <ul class="navbar-nav ms-auto">
+                <!-- Profile Dropdown -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-person-circle me-1"></i>
+                        <span th:text="${user.firstname}"></span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                        <li class="dropdown-header">Health Profile</li>
+                        <li><a class="dropdown-item" th:href="@{/patient/profile/demographics}"><i class="bi bi-person-vcard me-2"></i>Demographics</a></li>
+                        <li><a class="dropdown-item" th:href="@{/patient/profile/medical-history}"><i class="bi bi-clipboard2-pulse me-2"></i>Medical History</a></li>
+                        <li><a class="dropdown-item" th:href="@{/patient/profile/view}"><i class="bi bi-eye me-2"></i>View Profile</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" th:href="@{/logout}"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-10 mx-auto">
+            <h2 class="mb-4">My Health Profile</h2>
+
+            <!-- Personal Information Card -->
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Personal Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Name:</strong> <span th:text="${user.firstname} + ' ' + ${user.lastName}"></span></p>
+                            <p><strong>Email:</strong> <span th:text="${user.username}"></span></p>
+                            <p th:if="${demographics != null and demographics.dateOfBirth != null}">
+                                <strong>Date of Birth:</strong>
+                                <span th:text="${#temporals.format(demographics.dateOfBirth, 'yyyy-MM-dd')}"></span>
+                            </p>
+                            <p th:if="${demographics != null and demographics.gender != null}">
+                                <strong>Gender:</strong>
+                                <span th:text="${demographics.gender}"></span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p th:if="${demographics != null and demographics.phoneNumber != null}">
+                                <strong>Phone:</strong>
+                                <span th:text="${demographics.phoneNumber}"></span>
+                            </p>
+                            <p th:if="${demographics != null and demographics.ethnicity != null}">
+                                <strong>Ethnicity:</strong>
+                                <span th:text="${demographics.ethnicity}"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Information Card -->
+            <div class="card mb-4 shadow-sm" th:if="${demographics != null and demographics.address != null}">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Contact Information</h5>
+                </div>
+                <div class="card-body">
+                    <p th:if="${demographics.address != null}">
+                        <strong>Address:</strong>
+                        <span th:text="${demographics.address}"></span>
+                    </p>
+                    <div class="row" th:if="${demographics.city != null or demographics.state != null or demographics.zipCode != null}">
+                        <div class="col-md-4" th:if="${demographics.city != null}">
+                            <strong>City:</strong>
+                            <span th:text="${demographics.city}"></span>
+                        </div>
+                        <div class="col-md-4" th:if="${demographics.state != null}">
+                            <strong>State:</strong>
+                            <span th:text="${demographics.state}"></span>
+                        </div>
+                        <div class="col-md-4" th:if="${demographics.zipCode != null}">
+                            <strong>ZIP Code:</strong>
+                            <span th:text="${demographics.zipCode}"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Emergency Contact Card -->
+            <div class="card mb-4 shadow-sm"
+                 th:if="${demographics != null and demographics.emergencyContactName != null}">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">Emergency Contact</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Name:</strong> <span th:text="${demographics.emergencyContactName}"></span></p>
+                    <p><strong>Phone:</strong> <span th:text="${demographics.emergencyContactPhone}"></span></p>
+                    <p><strong>Relationship:</strong> <span th:text="${demographics.emergencyContactRelationship}"></span></p>
+                </div>
+            </div>
+
+            <!-- Medical Conditions Card -->
+            <div class="card mb-4 shadow-sm"
+                 th:if="${medicalHistory != null and medicalHistory.conditions != null and not medicalHistory.conditions.isEmpty()}">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">Medical Conditions</h5>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li th:each="condition : ${medicalHistory.conditions}" th:text="${condition}"></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Current Medications Card -->
+            <div class="card mb-4 shadow-sm"
+                 th:if="${medicalHistory != null and medicalHistory.currentMedications != null and not medicalHistory.currentMedications.isEmpty()}">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Current Medications</h5>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li th:each="medication : ${medicalHistory.currentMedications}" th:text="${medication}"></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Allergies Card -->
+            <div class="card mb-4 shadow-sm"
+                 th:if="${medicalHistory != null and medicalHistory.allergies != null and not medicalHistory.allergies.isEmpty()}">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">Allergies</h5>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li th:each="allergy : ${medicalHistory.allergies}" th:text="${allergy}"></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Healthcare Providers Card -->
+            <div class="card mb-4 shadow-sm"
+                 th:if="${medicalHistory != null and (medicalHistory.currentTherapist != null or medicalHistory.primaryCarePhysician != null)}">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Healthcare Providers</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6" th:if="${medicalHistory.currentTherapist != null}">
+                            <p><strong>Therapist/Counselor:</strong> <span th:text="${medicalHistory.currentTherapist}"></span></p>
+                            <p th:if="${medicalHistory.therapistContact != null}">
+                                <strong>Contact:</strong>
+                                <span th:text="${medicalHistory.therapistContact}"></span>
+                            </p>
+                        </div>
+                        <div class="col-md-6" th:if="${medicalHistory.primaryCarePhysician != null}">
+                            <p><strong>Primary Care Physician:</strong> <span th:text="${medicalHistory.primaryCarePhysician}"></span></p>
+                            <p th:if="${medicalHistory.physicianContact != null}">
+                                <strong>Contact:</strong>
+                                <span th:text="${medicalHistory.physicianContact}"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Insurance Information Card -->
+            <div class="card mb-4 shadow-sm"
+                 th:if="${medicalHistory != null and medicalHistory.insuranceProvider != null}">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Insurance Information</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Provider:</strong> <span th:text="${medicalHistory.insuranceProvider}"></span></p>
+                    <p th:if="${medicalHistory.insuranceId != null}">
+                        <strong>Insurance ID:</strong>
+                        <span th:text="${medicalHistory.insuranceId}"></span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Additional Medical History Card -->
+            <div class="card mb-4 shadow-sm"
+                 th:if="${medicalHistory != null and (medicalHistory.familyHistory != null or medicalHistory.previousTreatments != null or medicalHistory.previousDiagnosis != null)}">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Additional Medical History</h5>
+                </div>
+                <div class="card-body">
+                    <div th:if="${medicalHistory.familyHistory != null}">
+                        <h6>Family History</h6>
+                        <p th:text="${medicalHistory.familyHistory}"></p>
+                    </div>
+                    <div th:if="${medicalHistory.previousTreatments != null}" class="mt-3">
+                        <h6>Previous Treatments</h6>
+                        <p th:text="${medicalHistory.previousTreatments}"></p>
+                    </div>
+                    <div th:if="${medicalHistory.previousDiagnosis != null}" class="mt-3">
+                        <h6>Previous Diagnosis</h6>
+                        <p th:text="${medicalHistory.previousDiagnosis}"></p>
+                    </div>
+                    <div th:if="${medicalHistory.hospitalizationHistory != null}" class="mt-3">
+                        <h6>Hospitalization History</h6>
+                        <p th:text="${medicalHistory.hospitalizationHistory}"></p>
+                    </div>
+                    <div th:if="${medicalHistory.lastPhysicalExam != null}" class="mt-3">
+                        <h6>Last Physical Exam</h6>
+                        <p th:text="${#temporals.format(medicalHistory.lastPhysicalExam, 'yyyy-MM-dd')}"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="card">
+                <div class="card-body text-center">
+                    <a th:href="@{/patient/profile/demographics}" class="btn btn-primary me-2">Edit Demographics</a>
+                    <a th:href="@{/patient/profile/medical-history}" class="btn btn-primary me-2">Edit Medical History</a>
+                    <a th:href="@{/patient/dashboard}" class="btn btn-secondary">Back to Dashboard</a>
+                </div>
+            </div>
+
+            <!-- Empty State Messages -->
+            <div th:if="${demographics == null}" class="alert alert-info mt-3">
+                <h5>No Demographic Information Found</h5>
+                <p>You haven't added your demographic information yet.</p>
+                <a th:href="@{/patient/profile/demographics}" class="btn btn-primary">Add Demographics</a>
+            </div>
+
+            <div th:if="${medicalHistory == null}" class="alert alert-info mt-3">
+                <h5>No Medical History Found</h5>
+                <p>You haven't added your medical history yet.</p>
+                <a th:href="@{/patient/profile/medical-history}" class="btn btn-primary">Add Medical History</a>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

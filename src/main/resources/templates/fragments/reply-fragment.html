@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- Recursive reply card fragment -->
+<div th:fragment="reply-card(reply, threadId)" class="reply-card">
+    <div class="card">
+        <div class="card-body">
+            <!-- Reply header with author and timestamp -->
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <small class="text-muted">
+                    <strong th:text="${reply.authorDisplayName}">Author</strong> •
+                    <span th:text="${#temporals.format(reply.createdAt, 'yyyy-MM-dd HH:mm')}"></span>
+                </small>
+                <button class="btn btn-sm btn-link show-reply-form" type="button">
+                    Reply
+                </button>
+            </div>
+
+            <!-- Reply content -->
+            <p class="mb-2" th:text="${reply.replyText}">Reply text</p>
+
+            <!-- Reply form (hidden by default) -->
+            <div class="reply-form mt-2" style="display:none;">
+                <!-- Error message for nested replies -->
+                <div th:if="${session.replyError != null}"
+                     class="alert alert-danger alert-dismissible fade show mb-2" role="alert">
+                    <small th:text="${session.replyError}">Error message</small>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
+                <form th:action="@{/community/reply}" method="post">
+                    <input type="hidden" name="threadId" th:value="${threadId}"/>
+                    <input type="hidden" name="parentReplyId" th:value="${reply.id}"/>
+                    <div class="mb-2">
+                        <textarea name="replyText" rows="2" class="form-control"
+                                  placeholder="Write a reply..." required
+                                  th:text="${session.unsafeReplyText != null ? session.unsafeReplyText : ''}"></textarea>
+                    </div>
+                    <button class="btn btn-sm btn-primary">Post Reply</button>
+                </form>
+            </div>
+
+            <!-- Children replies section -->
+            <div th:if="${!#lists.isEmpty(reply.children)}">
+                <button class="view-children btn btn-sm btn-link mt-2"
+                        th:attr="data-target='children-' + ${reply.id}"
+                        th:text="'View replies (' + ${#lists.size(reply.children)} + ')'">
+                    View replies (0)
+                </button>
+
+                <div class="reply-children mt-2" th:id="'children-' + ${reply.id}" style="display:none;">
+                    <!-- Recursively render child replies -->
+                    <div th:each="childReply : ${reply.children}">
+                        <div th:replace="~{fragments/reply-fragment :: reply-card(${childReply}, ${threadId})}"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

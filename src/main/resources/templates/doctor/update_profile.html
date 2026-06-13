@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Update Profile</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .modal {
+            display: block; /* Changed from 'none' to show by default */
+            position: relative;
+            z-index: 1;
+            padding-top: 50px;
+            width: 100%;
+            height: auto;
+            overflow: auto;
+            background-color: transparent;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 50%;
+            position: relative;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        .close:hover, .close:focus {
+            color: black;
+            text-decoration: none;
+        }
+        .container {
+            max-width: 800px;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+        <a class="navbar-brand" href="#">Update Profile</a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="btn btn-danger" href="/logout">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-5">
+
+
+    <div id="updateProfileModal" class="modal">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+
+            </div>
+
+            <form id="updateProfileForm" th:action="@{/doctor/update_profile}" th:object="${user}" method="post">
+                <input type="hidden" name="id" th:value="${user.id}"/>
+                <div class="mb-2">
+                    <label>Email</label>
+                    <input disabled type="email" class="form-control" name="email" th:field="*{username}" required>
+                </div>
+                <div class="mb-2">
+                    <label>First Name</label>
+                    <input type="text" class="form-control" name="firstName" th:field="*{firstname}" required>
+                </div>
+                <div class="mb-2">
+                    <label>Last Name</label>
+                    <input type="text" class="form-control" name="lastName" th:field="*{lastName}" required>
+                </div>
+
+                <div class="mb-2">
+                    <label>Role</label>
+                    <input disabled type="text" class="form-control" th:value="${#strings.listJoin(user.roles, ', ')}" readonly>
+
+                </div>
+
+                <!-- Doctor-specific fields -->
+                <div th:if="${user.doctor != null}">
+                    <div class="mb-2">
+                        <label>Designation</label>
+                        <select class="form-control" name="designation">
+                            <option value="LCSW" th:selected="${user.doctor.designation == 'LCSW'}">LCSW</option>
+                            <option value="LMFT" th:selected="${user.doctor.designation == 'LMFT'}">LMFT</option>
+                            <option value="PhD" th:selected="${user.doctor.designation == 'PhD'}">PhD</option>
+                            <option value="MD" th:selected="${user.doctor.designation == 'MD'}">MD</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label>Specialization</label>
+                        <select class="form-control" name="specialization">
+                            <option value="Depression" th:selected="${user.doctor.specialization == 'Depression'}">Depression</option>
+                            <option value="OCD" th:selected="${user.doctor.specialization == 'OCD'}">OCD</option>
+                            <option value="LGBTQ" th:selected="${user.doctor.specialization == 'LGBTQ'}">LGBTQ</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Alternative approach if doctor info is directly in user object -->
+                <div th:unless="${user.doctor != null}">
+                    <div class="mb-2">
+                        <label>Designation</label>
+                        <select class="form-control" name="designation">
+                            <option value="LCSW" th:selected="${user.designation == 'LCSW'}">LCSW</option>
+                            <option value="LMFT" th:selected="${user.designation == 'LMFT'}">LMFT</option>
+                            <option value="PhD" th:selected="${user.designation == 'PhD'}">PhD</option>
+                            <option value="MD" th:selected="${user.designation == 'MD'}">MD</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label>Specialization</label>
+                        <select class="form-control" name="specialization">
+                            <option value="Depression" th:selected="${user.specialization == 'Depression'}">Depression</option>
+                            <option value="OCD" th:selected="${user.specialization == 'OCD'}">OCD</option>
+                            <option value="LGBTQ" th:selected="${user.specialization == 'LGBTQ'}">LGBTQ</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary mt-2">Update Profile</button>
+                <a th:href="@{/doctor/dashboard}" class="btn btn-secondary mt-2 ms-2">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Form submission handler (optional - can use regular form submission)
+    document.getElementById("updateProfileForm").addEventListener("submit", function(e) {
+        // You can keep this for AJAX submission or remove it for regular form submission
+        // e.preventDefault();
+
+        // If using AJAX:
+        /*
+        const formData = new FormData(this);
+        fetch("/doctor/update-profile", {
+            method: "POST",
+            body: formData
+        })
+        .then(response => {
+            if (response.ok) {
+                alert("Profile Updated Successfully!");
+                window.location.href = "/doctor/dashboard";
+            } else {
+                alert("Error updating profile!");
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("Error updating profile!");
+        });
+        */
+    });
+</script>
+
+
+</body>
+</html>

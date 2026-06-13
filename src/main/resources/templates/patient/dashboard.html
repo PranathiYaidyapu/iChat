@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Patient Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container">
+    <a class="navbar-brand" th:href="@{/home}">
+      <i class="bi bi-heart-pulse me-1"></i>iChat
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+          <a class="nav-link" th:href="@{/home}">
+            <i class="bi bi-house-door me-1"></i>Dashboard
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" th:href="@{/patient/appointment/new}">
+            <i class="bi bi-calendar-plus me-1"></i>Book Appointment
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" th:href="@{/community}">
+            <i class="bi bi-people-fill me-1"></i>Community
+          </a>
+        </li>
+      </ul>
+
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="profileDropdown"
+             data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-person-circle me-1"></i>
+            <span th:text="${user.firstname}"></span>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li class="dropdown-header">Health Profile</li>
+            <li><a class="dropdown-item" th:href="@{/patient/profile/demographics}">
+              <i class="bi bi-person-vcard me-2"></i>Demographics</a>
+            </li>
+            <li><a class="dropdown-item" th:href="@{/patient/profile/medical-history}">
+              <i class="bi bi-clipboard2-pulse me-2"></i>Medical History</a>
+            </li>
+            <li><a class="dropdown-item" th:href="@{/patient/profile/view}">
+              <i class="bi bi-eye me-2"></i>View Profile</a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" th:href="@{/logout}">
+              <i class="bi bi-box-arrow-right me-2"></i>Logout</a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+
+    </div>
+  </div>
+</nav>
+
+<!-- DASHBOARD LAYOUT -->
+<div class="container mt-5">
+  <h2 class="mb-4">Patient Dashboard</h2>
+
+  <div class="d-flex" style="column-gap: 5%;">
+
+    <!-- LEFT SIDE (70%) -->
+    <div style="flex-basis: 70%;">
+
+      <!-- Book New Appointment -->
+      <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+          <h4>Book New Appointment</h4>
+          <p>Find available doctors and schedule your session.</p>
+          <a th:href="@{/patient/appointment/new}" class="btn btn-success">+ Add Appointment</a>
+        </div>
+      </div>
+
+      <!-- Upcoming Appointments -->
+      <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">Upcoming Appointments</h4>
+            <a th:href="@{/appointments}" class="btn btn-success">Manage Appointments</a>
+          </div>
+
+          <table class="table table-striped"
+                 th:if="${upcomingAppointments != null and !upcomingAppointments.isEmpty()}">
+            <thead>
+            <tr>
+              <th>Doctor</th>
+              <th>Date</th>
+              <th>Time</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="a : ${upcomingAppointments}">
+              <td th:text="${a.doctor.user.firstname} + ' ' + ${a.doctor.user.lastName}"></td>
+              <td th:text="${#temporals.format(a.appointmentDate, 'yyyy-MM-dd')}"></td>
+              <td th:text="${#temporals.format(a.startTime, 'HH:mm')}"></td>
+            </tr>
+            </tbody>
+          </table>
+
+          <p th:if="${upcomingAppointments == null or upcomingAppointments.isEmpty()}">
+            No upcoming appointments.
+          </p>
+        </div>
+      </div>
+
+      <!-- Past Appointments -->
+      <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+          <h4>Past Appointments</h4>
+
+          <table class="table table-striped"
+                 th:if="${pastAppointments != null and !pastAppointments.isEmpty()}">
+            <thead>
+            <tr>
+              <th>Doctor</th>
+              <th>Date</th>
+              <th>Time</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="a : ${pastAppointments}">
+              <td th:text="${a.doctor.user.firstname} + ' ' + ${a.doctor.user.lastName}"></td>
+              <td th:text="${#temporals.format(a.appointmentDate, 'yyyy-MM-dd')}"></td>
+              <td th:text="${a.startTime}"></td>
+            </tr>
+            </tbody>
+          </table>
+
+          <p th:if="${pastAppointments == null or pastAppointments.isEmpty()}">
+            No past appointments found.
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT SIDE (25%) -->
+    <div style="flex-basis: 25%;">
+
+      <!-- Medication Management -->
+      <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">Medication Management</h4>
+            <a th:href="@{/patient/medications}" class="btn btn-info">Manage</a>
+          </div>
+          <p class="mt-2 mb-0">Set reminders and manage prescriptions.</p>
+        </div>
+      </div>
+
+      <!-- Appointment Calendar -->
+      <div class="card mb-4 shadow-sm border-info">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h4 class="text-info mb-1">
+                <i class="bi bi-calendar-week me-2"></i>Appointment Calendar
+              </h4>
+              <p class="mb-0 text-muted">View and manage your schedule.</p>
+            </div>
+            <div>
+              <a th:href="@{/patient/calendar}" class="btn btn-info">
+                <i class="bi bi-calendar3 me-1"></i>View</a>
+              <a hidden th:href="@{/patient/appointment/new}" class="btn btn-outline-info ms-2">
+                <i class="bi bi-plus-circle me-1"></i>New</a>
+            </div>
+          </div>
+
+          <div class="mt-3"
+               th:if="${upcomingAppointments != null and !upcomingAppointments.isEmpty()}">
+            <h6>Next Appointments:</h6>
+            <div class="list-group list-group-flush">
+              <div th:each="appointment : ${upcomingAppointments}"
+                   class="list-group-item px-0">
+                <small>
+                  <strong th:text="'Dr. ' + ${appointment.doctor.user.firstname} + ' ' + ${appointment.doctor.user.lastName}"></strong>
+                  <br>
+                  <span th:text="${#temporals.format(appointment.appointmentDate, 'MMM d')} + ' at ' + ${#temporals.format(appointment.startTime, 'HH:mm')}"></span>
+                </small>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

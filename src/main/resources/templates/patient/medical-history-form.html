@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Medical History</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .required:after {
+      content: " *";
+      color: red;
+    }
+  </style>
+</head>
+<body class="bg-light">
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container">
+    <a class="navbar-brand" th:href="@{/patient/dashboard}">
+      <i class="bi bi-heart-pulse me-1"></i>iChat
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+          <a class="nav-link" th:href="@{/patient/dashboard}">
+            <i class="bi bi-house-door me-1"></i>Dashboard
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" th:href="@{/patient/appointment/new}">
+            <i class="bi bi-calendar-plus me-1"></i>Book Appointment
+          </a>
+        </li>
+        <!-- Community in Primary Nav -->
+        <li class="nav-item">
+          <a class="nav-link" th:href="@{/community}">
+            <i class="bi bi-people-fill me-1"></i>Community
+          </a>
+        </li>
+      </ul>
+      <ul class="navbar-nav ms-auto">
+        <!-- Profile Dropdown -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button"
+             data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-person-circle me-1"></i>
+            <span th:text="${user.firstname}"></span>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+            <li class="dropdown-header">Health Profile</li>
+            <li><a class="dropdown-item" th:href="@{/patient/profile/demographics}"><i class="bi bi-person-vcard me-2"></i>Demographics</a></li>
+            <li><a class="dropdown-item" th:href="@{/patient/profile/medical-history}"><i class="bi bi-clipboard2-pulse me-2"></i>Medical History</a></li>
+            <li><a class="dropdown-item" th:href="@{/patient/profile/view}"><i class="bi bi-eye me-2"></i>View Profile</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" th:href="@{/logout}"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-10 mx-auto">
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0">Medical History</h4>
+        </div>
+        <div class="card-body">
+          <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+          <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+          <!-- Simple form without th:object - use name attributes -->
+          <form th:action="@{/patient/profile/medical-history}" method="post">
+
+            <!-- Current Conditions -->
+            <div class="mb-3">
+              <label for="conditionsString" class="form-label">Current Medical Conditions</label>
+              <input type="text" class="form-control" id="conditionsString" name="conditionsString"
+                     th:value="${conditionsString}" placeholder="Separate multiple conditions with commas">
+              <div class="form-text">e.g., Depression, Anxiety, Diabetes, Hypertension</div>
+            </div>
+
+            <!-- Current Medications -->
+            <div class="mb-3">
+              <label for="medicationsString" class="form-label">Current Medications</label>
+              <input type="text" class="form-control" id="medicationsString" name="medicationsString"
+                     th:value="${medicationsString}" placeholder="Separate multiple medications with commas">
+              <div class="form-text">e.g., Sertraline 50mg, Lisinopril 10mg</div>
+            </div>
+
+            <!-- Allergies -->
+            <div class="mb-3">
+              <label for="allergiesString" class="form-label">Allergies</label>
+              <input type="text" class="form-control" id="allergiesString" name="allergiesString"
+                     th:value="${allergiesString}" placeholder="Separate multiple allergies with commas">
+              <div class="form-text">e.g., Penicillin, Peanuts, Latex</div>
+            </div>
+
+            <!-- Family History -->
+            <div class="mb-3">
+              <label for="familyHistory" class="form-label">Family Medical History</label>
+              <textarea class="form-control" id="familyHistory" name="familyHistory"
+                        rows="3" placeholder="Any significant medical conditions in your family"
+                        th:text="${medicalHistory.familyHistory}"></textarea>
+            </div>
+
+            <!-- Previous Treatments -->
+            <div class="mb-3">
+              <label for="previousTreatments" class="form-label">Previous Treatments/Therapies</label>
+              <textarea class="form-control" id="previousTreatments" name="previousTreatments"
+                        rows="3" placeholder="Any previous mental health treatments, therapies, or hospitalizations"
+                        th:text="${medicalHistory.previousTreatments}"></textarea>
+            </div>
+
+            <h5 class="mt-4 mb-3">Healthcare Providers</h5>
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="currentTherapist" class="form-label">Current Therapist/Counselor</label>
+                <input type="text" class="form-control" id="currentTherapist" name="currentTherapist"
+                       th:value="${medicalHistory.currentTherapist}">
+              </div>
+              <div class="col-md-6">
+                <label for="therapistContact" class="form-label">Therapist Contact</label>
+                <input type="text" class="form-control" id="therapistContact" name="therapistContact"
+                       th:value="${medicalHistory.therapistContact}">
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="primaryCarePhysician" class="form-label">Primary Care Physician</label>
+                <input type="text" class="form-control" id="primaryCarePhysician" name="primaryCarePhysician"
+                       th:value="${medicalHistory.primaryCarePhysician}">
+              </div>
+              <div class="col-md-6">
+                <label for="physicianContact" class="form-label">Physician Contact</label>
+                <input type="text" class="form-control" id="physicianContact" name="physicianContact"
+                       th:value="${medicalHistory.physicianContact}">
+              </div>
+            </div>
+
+            <h5 class="mt-4 mb-3">Insurance Information</h5>
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="insuranceProvider" class="form-label">Insurance Provider</label>
+                <input type="text" class="form-control" id="insuranceProvider" name="insuranceProvider"
+                       th:value="${medicalHistory.insuranceProvider}">
+              </div>
+              <div class="col-md-6">
+                <label for="insuranceId" class="form-label">Insurance ID Number</label>
+                <input type="text" class="form-control" id="insuranceId" name="insuranceId"
+                       th:value="${medicalHistory.insuranceId}">
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="lastPhysicalExam" class="form-label">Last Physical Exam Date</label>
+              <!-- Handle date field separately -->
+              <input type="date" class="form-control" id="lastPhysicalExam" name="lastPhysicalExam"
+                     th:value="${medicalHistory.lastPhysicalExam != null ? medicalHistory.lastPhysicalExam.toString() : ''}">
+            </div>
+
+            <h5 class="mt-4 mb-3">Mental Health Specific</h5>
+            <div class="mb-3">
+              <label for="previousDiagnosis" class="form-label">Previous Mental Health Diagnosis</label>
+              <textarea class="form-control" id="previousDiagnosis" name="previousDiagnosis"
+                        rows="3" placeholder="Any previous mental health diagnoses"
+                        th:text="${medicalHistory.previousDiagnosis}"></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label for="hospitalizationHistory" class="form-label">Hospitalization History</label>
+              <textarea class="form-control" id="hospitalizationHistory" name="hospitalizationHistory"
+                        rows="2" placeholder="Any previous psychiatric hospitalizations"
+                        th:text="${medicalHistory.hospitalizationHistory}"></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label for="substanceUseHistory" class="form-label">Substance Use History</label>
+              <textarea class="form-control" id="substanceUseHistory" name="substanceUseHistory"
+                        rows="2" placeholder="History of alcohol or substance use"
+                        th:text="${medicalHistory.substanceUseHistory}"></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label for="traumaHistory" class="form-label">Trauma History</label>
+              <textarea class="form-control" id="traumaHistory" name="traumaHistory"
+                        rows="2" placeholder="Any significant traumatic experiences"
+                        th:text="${medicalHistory.traumaHistory}"></textarea>
+            </div>
+
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+              <a th:href="@{/patient/dashboard}" class="btn btn-secondary me-md-2">Cancel</a>
+              <button type="submit" class="btn btn-primary">Save Medical History</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

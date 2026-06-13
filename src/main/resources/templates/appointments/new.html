@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Schedule Appointment</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+</head>
+<body>
+<div class="container mt-4">
+  <h3>Schedule Appointment</h3>
+
+  <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+  <form th:action="@{/appointments/new}" method="post">
+    <div class="mb-3">
+      <label for="doctor" class="form-label">Doctor</label>
+      <select id="doctor" name="doctorId" class="form-select" required>
+        <option value="" disabled selected>Select a doctor</option>
+        <option th:each="d : ${doctors}" th:value="${d.id}"
+                th:text="${d.user.firstname + ' ' + d.user.lastName + ' ('+ d.specialization +')'}"></option>
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label for="start" class="form-label">Start Time (yyyy-MM-ddTHH:mm)</label>
+      <input type="datetime-local" id="start" name="startTime" class="form-control" required/>
+    </div>
+
+    <div class="mb-3">
+      <label for="end" class="form-label">End Time (yyyy-MM-ddTHH:mm)</label>
+      <input type="datetime-local" id="end" name="endTime" class="form-control" required/>
+    </div>
+
+    <div class="mb-3">
+      <label for="reason" class="form-label">Reason (optional)</label>
+      <textarea id="reason" name="reason" class="form-control" rows="2"></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Schedule</button>
+    <a class="btn btn-secondary" th:href="@{/appointments}">Cancel</a>
+  </form>
+</div>
+</body>
+</html>

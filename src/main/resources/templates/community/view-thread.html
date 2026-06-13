@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title th:text="${thread.title}">Thread</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <style>
+        .reply-children {
+            margin-left: 30px;
+            border-left: 2px solid #e9ecef;
+            padding-left: 15px;
+        }
+        .view-replies-btn {
+            cursor: pointer;
+            color: #0d6efd;
+            background: none;
+            border: none;
+            padding: 0;
+            font-size: 0.875rem;
+        }
+        .reply-card {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container mt-4">
+    <a th:href="@{/community}" class="btn btn-sm btn-link">&larr; Back to threads</a>
+
+    <div class="card my-3">
+        <div class="card-body">
+            <h4 th:text="${thread.title}">Title</h4>
+            <p th:text="${thread.content}">Content</p>
+            <small class="text-muted">
+                Posted by <strong th:text="${thread.authorDisplayName}">Author</strong> •
+                <span th:text="${#temporals.format(thread.createdAt, 'yyyy-MM-dd HH:mm')}"></span>
+            </small>
+        </div>
+    </div>
+
+    <!-- Quick new reply to thread (top-level) -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <!-- Error message for reply -->
+            <div th:if="${replyError != null}"
+                 class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
+                <span th:text="${replyError}">Error message</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <form th:action="@{/community/reply}" method="post">
+                <input type="hidden" name="threadId" th:value="${thread.id}"/>
+                <input type="hidden" name="parentReplyId" value=""/>
+                <div class="mb-2">
+                    <textarea name="replyText" rows="3" class="form-control"
+                              placeholder="Add a reply..." required
+                              th:text="${unsafeReplyText != null ? unsafeReplyText : ''}"></textarea>
+                </div>
+                <button class="btn btn-primary">Reply to Thread</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Replies section -->
+    <div>
+        <h5>Replies</h5>
+        <div th:if="${#lists.isEmpty(replies)}" class="alert alert-info">No replies yet. Be the first to reply!</div>
+
+        <!-- Use the recursive fragment for all replies -->
+        <div th:each="reply : ${replies}">
+            <div th:replace="~{fragments/reply-fragment :: reply-card(${reply}, ${thread.id})}"></div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('click', function(e) {
+        // Handle reply form toggles
+        if (e.target.matches('.show-reply-form')) {
+            const cardBody = e.target.closest('.card-body');
+            const form = cardBody.querySelector('.reply-form');
+            if (form) {
+                form.style.display = form.style.display === 'none' ? 'block' : 'none';
+                e.target.textContent = form.style.display === 'none' ? 'Reply' : 'Cancel';
+            }
+        }
+
+        // Handle children toggles
+        if (e.target.matches('.view-children')) {
+            const targetId = e.target.getAttribute('data-target');
+            const childrenContainer = document.getElementById(targetId);
+            if (childrenContainer) {
+                const isHidden = childrenContainer.style.display === 'none';
+                childrenContainer.style.display = isHidden ? 'block' : 'none';
+                e.target.textContent = isHidden ?
+                    `Hide replies (${childrenContainer.querySelectorAll('.reply-card').length})` :
+                    `View replies (${childrenContainer.querySelectorAll('.reply-card').length})`;
+            }
+        }
+    });
+</script>
+</body>
+</html>

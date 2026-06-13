@@ -1,0 +1,31 @@
+<table class="table table-bordered mt-3">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Username</th>
+        <th>Role</th>
+        <th>Enabled</th>
+        <th>Specialization</th>
+        <th>Designation</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="user : ${users}">
+        <td th:text="${user.id}"></td>
+        <td th:text="${user.username}"></td>
+        <td th:text="${user.role}"></td>
+        <td th:text="${user.enabled}"></td>
+        <td th:text="${user.role=='doctor'?user.doctor.specialization:''}"></td>
+        <td th:text="${user.role=='doctor'?user.doctor.designation:''}"></td>
+        <td>
+            <form th:action="@{/admin/deactivate/{id}(id=${user.id})}" method="post" style="display:inline;">
+                <button class="btn btn-warning btn-sm">Deactivate</button>
+            </form>
+            <form th:action="@{/admin/delete/{id}(id=${user.id})}" method="post" style="display:inline;">
+                <button class="btn btn-danger btn-sm">Delete</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>

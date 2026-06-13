@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Appointment Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        .info-card {
+            border-left: 4px solid #0d6efd;
+            margin-bottom: 20px;
+        }
+        .medical-section {
+            border-left: 4px solid #198754;
+        }
+        .demographics-section {
+            border-left: 4px solid #6f42c1;
+        }
+        .badge-custom {
+            font-size: 0.8em;
+            padding: 0.4em 0.8em;
+        }
+        .list-group-item {
+            border-left: none;
+            border-right: none;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+        <a class="navbar-brand" href="#">Appointment Details</a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link text-light" th:href="@{/doctor/appointments}">
+                        <i class="bi bi-arrow-left"></i> Back to Appointments
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="btn btn-danger" href="/logout">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <!-- Appointment Header -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">Appointment Information</h4>
+            <span th:class="${appointment.status == 'SCHEDULED' ?
+                  'badge badge-custom bg-primary' :
+                  (appointment.status == 'COMPLETED' ?
+                      'badge badge-custom bg-success' :
+                      'badge badge-custom bg-danger')}"
+                  th:text="${appointment.status}">
+</span>
+
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6><i class="bi bi-calendar"></i> Date & Time</h6>
+                    <p class="mb-1">
+                        <strong>Date:</strong>
+                        <span th:text="${#temporals.format(appointment.startTime, 'EEEE, MMMM dd, yyyy')}"></span>
+                    </p>
+                    <p class="mb-1">
+                        <strong>Time:</strong>
+                        <span th:text="${#temporals.format(appointment.startTime, 'hh:mm a') + ' - ' + #temporals.format(appointment.endTime, 'hh:mm a')}"></span>
+                    </p>
+                    <p class="mb-0">
+                        <strong>Duration:</strong> 30 minutes
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <h6><i class="bi bi-info-circle"></i> Details</h6>
+                    <p th:if="${appointment.reason}" class="mb-0">
+                        <strong>Reason:</strong> <span th:text="${appointment.reason}"></span>
+                    </p>
+                    <p th:unless="${appointment.reason}" class="text-muted mb-0">
+                        No reason provided
+                    </p>
+                </div>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="mt-4" th:if="${appointment.status == 'SCHEDULED'}">
+                <form th:action="@{/doctor/appointments/{id}/complete(id=${appointment.id})}"
+                      method="post" class="d-inline">
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle"></i> Mark as Completed
+                    </button>
+                </form>
+                <a th:href="@{/doctor/appointments}" class="btn btn-secondary ms-2">
+                    <i class="bi bi-arrow-left"></i> Back to List
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Patient Information -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-person"></i> Patient Information</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Name:</strong>
+                        <span th:text="${patient.firstname + ' ' + patient.lastName}"></span>
+                    </p>
+                    <p><strong>Email:</strong>
+                        <span th:text="${patient.username}"></span>
+                    </p>
+                    <p th:if="${demographics?.phoneNumber != null and !demographics.phoneNumber.isEmpty()}">
+                        <strong>Phone:</strong>
+                        <span th:text="${demographics.phoneNumber}"></span>
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <p th:if="${demographics?.dateOfBirth != null}">
+                        <strong>Date of Birth:</strong>
+                        <span th:text="${#temporals.format(demographics.dateOfBirth, 'MMMM dd, yyyy')}"></span>
+                    </p>
+                    <p th:if="${demographics?.gender!=null}">
+                        <strong>Gender:</strong>
+                        <span th:text="${demographics.gender}"></span>
+                    </p>
+                    <p th:if="${demographics?.ethnicity!=null}">
+                        <strong>Ethnicity:</strong>
+                        <span th:text="${demographics.ethnicity}"></span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact & Emergency Information -->
+    <div th:if="${demographics != null}" class="card mb-4 demographics-section">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-geo-alt"></i> Contact & Emergency Information</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Address</h6>
+                    <p th:if="${demographics.address}" th:text="${demographics.address}"></p>
+                    <p th:if="${demographics.address != null and !demographics.address.isEmpty()}"></p>
+                        <span th:text="${demographics.city}"></span>
+                        <span th:if="${demographics?.city!=null and demographics?.state!=null}">, </span>
+                        <span th:text="${demographics.state}"></span>
+                        <span th:if="${demographics.zipCode}"> </span>
+                        <span th:text="${demographics.zipCode}"></span>
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <h6>Emergency Contact</h6>
+                    <p th:if="${demographics.emergencyContactName != null and !demographics.emergencyContactName.isEmpty()}">
+                        <strong>Name:</strong>
+                        <span th:text="${demographics.emergencyContactName}"></span>
+                    </p>
+                    <p th:if="${demographics.emergencyContactPhone != null and !demographics.emergencyContactPhone.isEmpty()}">
+                        <strong>Phone:</strong>
+                        <span th:text="${demographics.emergencyContactPhone}"></span>
+                    </p>
+                    <p th:if="${demographics.emergencyContactRelationship != null and !demographics.emergencyContactRelationship.isEmpty()}">
+                        <strong>Relationship:</strong>
+                        <span th:text="${demographics.emergencyContactRelationship}"></span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Medical History -->
+    <div th:if="${medicalHistory != null}" class="card mb-4 medical-section">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-heart-pulse"></i> Medical History</h5>
+        </div>
+        <div class="card-body">
+            <!-- Medical Conditions -->
+            <div class="mb-4">
+                <h6>Medical Conditions</h6>
+                <div th:if="${not #lists.isEmpty(medicalHistory.conditions)}">
+                    <div th:each="condition : ${medicalHistory.conditions}" class="mb-2">
+                        <span class="badge bg-info text-dark me-2" th:text="${condition}"></span>
+                    </div>
+                </div>
+                <p th:if="${#lists.isEmpty(medicalHistory.conditions)}" class="text-muted">
+                    No medical conditions recorded
+                </p>
+            </div>
+
+            <!-- Current Medications -->
+            <div class="mb-4">
+                <h6>Current Medications</h6>
+                <div th:if="${not #lists.isEmpty(medicalHistory.currentMedications)}">
+                    <div th:each="medication : ${medicalHistory.currentMedications}" class="mb-2">
+                        <span class="badge bg-warning text-dark me-2" th:text="${medication}"></span>
+                    </div>
+                </div>
+                <p th:if="${#lists.isEmpty(medicalHistory.currentMedications)}" class="text-muted">
+                    No current medications recorded
+                </p>
+            </div>
+
+            <!-- Allergies -->
+            <div class="mb-4">
+                <h6>Allergies</h6>
+                <div th:if="${not #lists.isEmpty(medicalHistory.allergies)}">
+                    <div th:each="allergy : ${medicalHistory.allergies}" class="mb-2">
+                        <span class="badge bg-danger me-2" th:text="${allergy}"></span>
+                    </div>
+                </div>
+                <p th:if="${#lists.isEmpty(medicalHistory.allergies)}" class="text-muted">
+                    No allergies recorded
+                </p>
+            </div>
+
+            <!-- Additional Medical Information -->
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Mental Health History</h6>
+                    <p th:if="${medicalHistory.previousDiagnosis}">
+                        <strong>Previous Diagnosis:</strong><br>
+                        <span th:text="${medicalHistory.previousDiagnosis}"></span>
+                    </p>
+                    <p th:if="${medicalHistory.hospitalizationHistory}">
+                        <strong>Hospitalization History:</strong><br>
+                        <span th:text="${medicalHistory.hospitalizationHistory}"></span>
+                    </p>
+                    <p th:if="${medicalHistory.traumaHistory}">
+                        <strong>Trauma History:</strong><br>
+                        <span th:text="${medicalHistory.traumaHistory}"></span>
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <h6>Healthcare Providers</h6>
+                    <p th:if="${medicalHistory.currentTherapist}">
+                        <strong>Current Therapist:</strong>
+                        <span th:text="${medicalHistory.currentTherapist}"></span>
+                    </p>
+                    <p th:if="${medicalHistory.primaryCarePhysician}">
+                        <strong>Primary Care Physician:</strong>
+                        <span th:text="${medicalHistory.primaryCarePhysician}"></span>
+                    </p>
+                    <p th:if="${medicalHistory.insuranceProvider}">
+                        <strong>Insurance:</strong>
+                        <span th:text="${medicalHistory.insuranceProvider}"></span>
+                        <span th:if="${medicalHistory.insuranceId}"> (ID: <span th:text="${medicalHistory.insuranceId}"></span>)</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Family History -->
+            <div th:if="${medicalHistory.familyHistory}" class="mt-4">
+                <h6>Family History</h6>
+                <p th:text="${medicalHistory.familyHistory}"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notes Section (Optional - for doctor to add notes) -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-pencil"></i> Session Notes</h5>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/doctor/appointments/{id}/notes(id=${appointment.id})}" method="post">
+                <div class="mb-3">
+                    <textarea class="form-control" name="notes" rows="4"
+                              placeholder="Add your session notes here..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Save Notes
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

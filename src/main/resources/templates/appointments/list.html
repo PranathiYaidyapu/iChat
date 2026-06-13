@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Manage Appointments</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <style>
+    .status-scheduled { color: #198754; font-weight: bold; }
+    .status-cancelled { color: #dc3545; font-weight: bold; }
+    .status-completed { color: #6c757d; font-weight: bold; }
+    .nav-link.active { background-color: rgba(255,255,255,0.2); border-radius: 4px; }
+  </style>
+</head>
+<body>
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+  <div class="container">
+    <a class="navbar-brand" th:href="@{/patient/dashboard}">
+      <i class="bi bi-heart-pulse me-1"></i>iChat
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+          <a class="nav-link" th:href="@{/patient/dashboard}">
+            <i class="bi bi-house-door me-1"></i>Dashboard
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" th:href="@{/appointments}">
+            <i class="bi bi-calendar-check me-1"></i>Appointments
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" th:href="@{/patient/appointment/new}">
+            <i class="bi bi-calendar-plus me-1"></i>Book New
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" th:href="@{/patient/medications}">
+            <i class="bi bi-capsule me-1"></i>Medications
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" th:href="@{/patient/calendar}">
+            <i class="bi bi-calendar-week me-1"></i>Calendar
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" th:href="@{/community}">
+            <i class="bi bi-people-fill me-1"></i>Community
+          </a>
+        </li>
+      </ul>
+      <ul class="navbar-nav ms-auto">
+        <!-- Profile Dropdown -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button"
+             data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-person-circle me-1"></i>
+            <span th:text="${user != null ? user.firstname : 'Profile'}"></span>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+            <li class="dropdown-header">Health Profile</li>
+            <li><a class="dropdown-item" th:href="@{/patient/profile/demographics}"><i class="bi bi-person-vcard me-2"></i>Demographics</a></li>
+            <li><a class="dropdown-item" th:href="@{/patient/profile/medical-history}"><i class="bi bi-clipboard2-pulse me-2"></i>Medical History</a></li>
+            <li><a class="dropdown-item" th:href="@{/patient/profile/view}"><i class="bi bi-eye me-2"></i>View Profile</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" th:href="@{/logout}"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<div class="container mt-4">
+  <!-- Page Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2><i class="bi bi-calendar-check text-primary me-2"></i>Manage Appointments</h2>
+      <p class="text-muted mb-0">View and manage your upcoming and cancelled appointments</p>
+    </div>
+    <a class="btn btn-primary" th:href="@{/patient/appointment/new}">
+      <i class="bi bi-plus-circle me-1"></i>Book New Appointment
+    </a>
+  </div>
+
+  <!-- Scheduled Appointments Section -->
+  <div class="card mb-4 shadow-sm border-success">
+    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">
+        <i class="bi bi-clock-history me-2"></i>Upcoming Appointments
+      </h5>
+      <span class="badge bg-light text-success" th:text="${scheduledAppointments != null ? scheduledAppointments.size() : '0'}"></span>
+    </div>
+    <div class="card-body">
+      <div th:if="${scheduledAppointments == null or scheduledAppointments.isEmpty()}">
+        <div class="text-center py-4">
+          <i class="bi bi-calendar-x display-4 text-muted"></i>
+          <h5 class="mt-3 text-muted">No upcoming appointments</h5>
+          <p class="text-muted">You don't have any scheduled appointments at the moment.</p>
+          <a th:href="@{/patient/appointment/new}" class="btn btn-outline-success">
+            <i class="bi bi-calendar-plus me-1"></i>Book Your First Appointment
+          </a>
+        </div>
+      </div>
+      <div th:if="${scheduledAppointments != null and !scheduledAppointments.isEmpty()}">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+            <tr>
+              <th>Doctor</th>
+              <th>Specialization</th>
+              <th>Date & Time</th>
+              <th>Status</th>
+              <th>Reason</th>
+              <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="a : ${scheduledAppointments}">
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="flex-shrink-0">
+                    <i class="bi bi-person-circle text-secondary fs-4"></i>
+                  </div>
+                  <div class="flex-grow-1 ms-3">
+                    <strong th:text="${a.doctor.user.firstname + ' ' + a.doctor.user.lastName}"></strong>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="badge bg-info" th:text="${a.doctor.specialization}"></span>
+              </td>
+              <td>
+                <div class="fw-bold" th:text="${#temporals.format(a.appointmentDate, 'EEE, MMM dd, yyyy')}"></div>
+                <small class="text-muted" th:text="${#temporals.format(a.startTime, 'hh:mm a')} + ' - ' + ${#temporals.format(a.endTime, 'hh:mm a')}"></small>
+              </td>
+              <td>
+                <span class="badge bg-success" th:text="${a.status}"></span>
+              </td>
+              <td>
+                <div class="text-truncate" style="max-width: 200px;" th:text="${a.reason}" th:title="${a.reason}"></div>
+              </td>
+              <td>
+                <form th:action="@{|/appointments/${a.id}/cancel|}" method="post" style="display:inline">
+                  <button type="submit" class="btn btn-sm btn-outline-danger"
+                          onclick="return confirm('Are you sure you want to cancel this appointment?')">
+                    <i class="bi bi-x-circle me-1"></i>Cancel
+                  </button>
+                </form>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cancelled Appointments Section -->
+  <div class="card mb-4 shadow-sm border-danger">
+    <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">
+        <i class="bi bi-x-circle me-2"></i>Cancelled Appointments
+      </h5>
+      <span class="badge bg-light text-danger" th:text="${cancelledAppointments != null ? cancelledAppointments.size() : '0'}"></span>
+    </div>
+    <div class="card-body">
+      <div th:if="${cancelledAppointments == null or cancelledAppointments.isEmpty()}">
+        <div class="text-center py-4">
+          <i class="bi bi-check-circle display-4 text-muted"></i>
+          <h5 class="mt-3 text-muted">No cancelled appointments</h5>
+          <p class="text-muted">You haven't cancelled any appointments yet.</p>
+        </div>
+      </div>
+      <div th:if="${cancelledAppointments != null and !cancelledAppointments.isEmpty()}">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+            <tr>
+              <th>Doctor</th>
+              <th>Specialization</th>
+              <th>Original Date & Time</th>
+              <th>Status</th>
+              <th>Reason</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="a : ${cancelledAppointments}">
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="flex-shrink-0">
+                    <i class="bi bi-person-circle text-secondary fs-4"></i>
+                  </div>
+                  <div class="flex-grow-1 ms-3">
+                    <strong th:text="${a.doctor.user.firstname + ' ' + a.doctor.user.lastName}"></strong>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="badge bg-info" th:text="${a.doctor.specialization}"></span>
+              </td>
+              <td>
+                <div class="fw-bold" th:text="${#temporals.format(a.appointmentDate, 'EEE, MMM dd, yyyy')}"></div>
+                <small class="text-muted" th:text="${#temporals.format(a.startTime, 'hh:mm a')}"></small>
+              </td>
+              <td>
+                <span class="badge bg-danger" th:text="${a.status}"></span>
+              </td>
+              <td>
+                <div class="text-truncate" style="max-width: 200px;" th:text="${a.reason}" th:title="${a.reason}"></div>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fallback: If the new variables aren't available, show all appointments -->
+  <div th:if="${(scheduledAppointments == null and cancelledAppointments == null) and (appointments != null and !appointments.isEmpty())}">
+    <div class="alert alert-warning">
+      <h5><i class="bi bi-exclamation-triangle me-2"></i>All Appointments</h5>
+      <p class="mb-0">Displaying all appointments in a single list. Scheduled appointments appear first.</p>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-striped table-hover">
+        <thead>
+        <tr>
+          <th>Doctor</th>
+          <th>Specialization</th>
+          <th>Date & Time</th>
+          <th>Status</th>
+          <th>Reason</th>
+          <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="a : ${appointments}">
+          <td th:text="${a.doctor.user.firstname + ' ' + a.doctor.user.lastName}"></td>
+          <td>
+            <span class="badge bg-info" th:text="${a.doctor.specialization}"></span>
+          </td>
+          <td>
+            <div th:text="${#temporals.format(a.appointmentDate, 'yyyy-MM-dd')}"></div>
+            <small class="text-muted" th:text="${#temporals.format(a.startTime, 'HH:mm')} + ' - ' + ${#temporals.format(a.endTime, 'HH:mm')}"></small>
+          </td>
+          <td>
+                        <span th:class="${a.status == 'SCHEDULED'} ? 'badge bg-success' :
+                                       ${a.status == 'CANCELLED'} ? 'badge bg-danger' :
+                                       'badge bg-secondary'"
+                              th:text="${a.status}"></span>
+          </td>
+          <td th:text="${a.reason}"></td>
+          <td>
+            <div th:if="${a.status == 'SCHEDULED'}">
+              <form th:action="@{|/appointments/${a.id}/cancel|}" method="post" style="display:inline">
+                <button type="submit" class="btn btn-sm btn-outline-danger"
+                        onclick="return confirm('Are you sure you want to cancel this appointment?')">
+                  <i class="bi bi-x-circle me-1"></i>Cancel
+                </button>
+              </form>
+            </div>
+            <span th:if="${a.status != 'SCHEDULED'}" class="text-muted">-</span>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- No appointments at all -->
+  <div th:if="${(scheduledAppointments == null or scheduledAppointments.isEmpty()) and
+                  (cancelledAppointments == null or cancelledAppointments.isEmpty()) and
+                  (appointments == null or appointments.isEmpty())}">
+    <div class="text-center py-5">
+      <i class="bi bi-calendar display-1 text-muted"></i>
+      <h3 class="mt-4 text-muted">No Appointments Found</h3>
+      <p class="text-muted mb-4">You haven't booked any appointments yet.</p>
+      <a th:href="@{/patient/appointment/new}" class="btn btn-primary btn-lg">
+        <i class="bi bi-calendar-plus me-2"></i>Book Your First Appointment
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Add confirmation for cancellation
+  document.addEventListener('DOMContentLoaded', function() {
+    const cancelButtons = document.querySelectorAll('button[type="submit"]');
+    cancelButtons.forEach(button => {
+      button.addEventListener('click', function(e) {
+        if (!confirm('Are you sure you want to cancel this appointment?')) {
+          e.preventDefault();
+        }
+      });
+    });
+  });
+</script>
+</body>
+</html>

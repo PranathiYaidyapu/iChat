@@ -32,7 +32,3 @@ iChat is a healthcare-focused web application designed to facilitate communicati
 - Real-time messaging
 - Email and SMS notifications
 - Cloud deployment
-
-## Author
-
-Pranathi Yaidyapu

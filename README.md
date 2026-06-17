@@ -16,7 +16,8 @@ iChat is a healthcare-focused web application designed to facilitate communicati
 
 - Java
 - HTML
-- Maven
+- Web Development
+- Software Engineering
 
 ## Applications
 
